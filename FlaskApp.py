@@ -6,8 +6,10 @@ from healthcheck import HealthCheck
 import ast
 from flask import Flask, jsonify, request
 import numpy as np
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app, origins='*', allow_headers='*')
 
 logging.basicConfig(filename="flask.log", level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s")
@@ -107,7 +109,7 @@ def autocomplete():
     es = connect2ES(ipAddress=ESServer)
     # search query
     b = {
-          "size": 5,
+          "size": 10,
           "_source": ["name", "mimeType", "contentType"], 
           "query": { 
             "bool": { 
@@ -137,8 +139,9 @@ def autocomplete():
           }
         }
     resp = es.search(index="compositesearch", body=b)
-    respList = [hit["_source"]["name"] for hit in resp["hits"]["hits"]]
-    return jsonify({"autocompleteList": sorted(respList, reverse=True)})
+    respList = [hit["_source"]["name"] for hit in resp["hits"]["hits"] if len(hit["_source"]["name"]) < 30]
+    #return jsonify({"autocompleteList": sorted(respList, reverse=True)})
+    return jsonify([{"title": i} for i in sorted(respList, reverse=True)])
 
 @app.route('/spellcorrect',  methods=['POST'])
 def spellcorrect():
@@ -147,7 +150,7 @@ def spellcorrect():
     es = connect2ES(ipAddress=ESServer)
     # search query
     b = {
-         "size": 5,
+         "size": 1,
          "_source": ["name", "mimeType", "contentType"],
          "query": {
            "bool": {
