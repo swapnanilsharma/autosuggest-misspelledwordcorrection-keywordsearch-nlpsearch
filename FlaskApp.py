@@ -136,7 +136,7 @@ def autocomplete():
             }
           }
         }
-    resp = es.search(index="nlp_compositesearch", body=b)
+    resp = es.search(index="compositesearch", body=b)
     respList = [hit["_source"]["name"] for hit in resp["hits"]["hits"]]
     return jsonify({"autocompleteList": sorted(respList, reverse=True)})
 
@@ -178,7 +178,7 @@ def spellcorrect():
            }
          }
         }
-    resp = es.search(index="nlp_compositesearch", body=b)
+    resp = es.search(index="compositesearch", body=b)
     return jsonify({"spellcorrectList": [hit["_source"]["name"] for hit in resp["hits"]["hits"]]})
 
 
