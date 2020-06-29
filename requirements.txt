@@ -1,0 +1,7 @@
+gunicorn
+elasticsearch
+healthcheck
+flask
+requests
+six
+numpy

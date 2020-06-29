@@ -1,0 +1,11 @@
+version: '2'
+
+services:
+    refresh-compositesearch-with-vectors:
+        build: .
+        ports: 
+            - "8895:2233"
+        image: autosuggest-misspelledwordcorrection-keywordsearch-nlpsearch
+        container_name: autosuggest-misspelledwordcorrection-keywordsearch-nlpsearch
+        environment:
+            - VIRTUAL_HOST=flaskapp.swap.io
