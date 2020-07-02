@@ -128,7 +128,7 @@ def nlpsearch():
     apiUrl = request.args.get('apiUrl') or request.get_json().get('apiUrl', '')
     #ESServer = "52.172.51.143"
     #vecServerEndpoint = "http://52.172.51.143:8890/getvector"
-    #apiUrl = "apiUrl": "https://mahacyber.ddns.net/api/content/v1/search"
+    #apiUrl = "https://mahacyber.ddns.net/api/content/v1/search"
 
     searchString = request.args.get('searchString') or request.get_json().get('searchString', '')
     es = connect2ES(ipAddress=ESServer)
