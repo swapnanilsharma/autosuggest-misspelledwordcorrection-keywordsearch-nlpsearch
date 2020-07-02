@@ -1,5 +1,6 @@
 from elasticsearch import Elasticsearch
 import sys
+import json
 import requests
 import logging
 from healthcheck import HealthCheck
@@ -44,6 +45,34 @@ def keywordSearch(es, q):
     res= es.search(index='compositesearch',body=b)
     return res['hits']['hits']
 
+def getResponseAgainstDoId(apiUrl, searchString, limit=1):
+    headers = {"Content-Type" : "application/json", "Cache-Control": "no-cache"}
+    data = {
+      "request": {
+         "filters": {
+                     "status"     : ["Live"],
+                     "channel"    : "DUMMY CHANNEL",
+                     "board"      : ["DUMMY BOARD"],
+                     "contentType": ["Collection", "TextBook", "LessonPlan", "Resource"],
+                     },
+         "limit"  : limit,
+         "query"  : searchString,
+         "softConstraints": {
+                             "badgeAssertions" : 98,
+                             "board"           : 99,
+                             "channel"         : 100
+                             },
+         "mode"  :"soft",
+         "facets": ['board', 'gradeLevel', 'subject', 'medium'],
+         "offset": 0
+      }
+    }
+    r = requests.post(url=apiUrl, json=data, headers=headers)
+    if r.status_code == 200:
+        return r.text
+    else:
+        return -1
+
 # Search by Vec Similarity
 def sentenceSimilaritybyNN(vecServerEndpoint, es, searchQuery):
     headers = {'Content-Type': 'application/json'}
@@ -54,7 +83,14 @@ def sentenceSimilaritybyNN(vecServerEndpoint, es, searchQuery):
     b = {"query" : {
                 "script_score" : {
                     "query" : {
-                        "match_all": {}
+                        "bool" : {
+                            "must": [{"match": {"status" : "Live"}}],
+                            "filter" : {
+                                      "match": {
+                                            "contentType" : "Resource"
+                                               }
+                                       }
+                                 }
                     },
                     "script" : {
                         "source": """
@@ -85,18 +121,23 @@ def kwSearch():
     return jsonify(output)
 
 
-@app.route('/semanticsearch',  methods=['POST'])
-def semSearch():
+@app.route('/nlpsearch',  methods=['POST'])
+def nlpsearch():
     ESServer = request.args.get('ESServer') or request.get_json().get('ESServer', '')
     vecServerEndpoint = request.args.get('vecServerEndpoint') or request.get_json().get('vecServerEndpoint', '')
-    searchQuery = request.args.get('searchQuery') or request.get_json().get('searchQuery', '')
+    apiUrl = request.args.get('apiUrl') or request.get_json().get('apiUrl', '')
+    searchString = request.args.get('searchString') or request.get_json().get('searchString', '')
     es = connect2ES(ipAddress=ESServer)
 
-    results = sentenceSimilaritybyNN(vecServerEndpoint, es, searchQuery)
-    output = dict()
+    results = sentenceSimilaritybyNN(vecServerEndpoint, es, searchString)
+    #output = dict()
+    output = []
     for hit in results:
-        output[str(hit['_score'])] = hit['_source']['name']
-    return jsonify(output)
+        #output[str(hit['_score'])] = hit['_source']['name']
+        #print(hit['_score'],  hit['_source']['name'])
+        output.append(json.loads(getResponseAgainstDoId(apiUrl, hit['_source']['identifier'], limit=1)))
+    #return jsonify(output)
+    return {"responseCode": "OK", "result": output, 'error': '', 'count': len(output)}
 
 @app.route('/advancesearch',  methods=['POST'])
 def advanceSearch():
@@ -186,4 +227,4 @@ def spellcorrect():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=3999, debug=True)
+    app.run(host='0.0.0.0', port=8896, debug=True)
