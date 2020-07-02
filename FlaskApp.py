@@ -126,6 +126,10 @@ def nlpsearch():
     ESServer = request.args.get('ESServer') or request.get_json().get('ESServer', '')
     vecServerEndpoint = request.args.get('vecServerEndpoint') or request.get_json().get('vecServerEndpoint', '')
     apiUrl = request.args.get('apiUrl') or request.get_json().get('apiUrl', '')
+    #ESServer = "52.172.51.143"
+    #vecServerEndpoint = "http://52.172.51.143:8890/getvector"
+    #apiUrl = "apiUrl": "https://mahacyber.ddns.net/api/content/v1/search"
+
     searchString = request.args.get('searchString') or request.get_json().get('searchString', '')
     es = connect2ES(ipAddress=ESServer)
 
@@ -227,4 +231,4 @@ def spellcorrect():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8896, debug=True)
+    app.run(host='0.0.0.0', port=3456, debug=True)

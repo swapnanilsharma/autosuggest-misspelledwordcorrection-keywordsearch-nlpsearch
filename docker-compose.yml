@@ -4,7 +4,7 @@ services:
     refresh-compositesearch-with-vectors:
         build: .
         ports: 
-            - "8895:2233"
+            - "3456:3456"
         image: autosuggest-misspelledwordcorrection-keywordsearch-nlpsearch
         container_name: autosuggest-misspelledwordcorrection-keywordsearch-nlpsearch
         environment:

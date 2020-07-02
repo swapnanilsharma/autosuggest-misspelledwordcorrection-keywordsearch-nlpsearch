@@ -12,4 +12,4 @@ COPY . ./
 RUN pip3 --no-cache-dir install -r requirements.txt
 
 # Run the flask service on container startup
-CMD exec gunicorn --bind :2233 --workers 1 --threads 8 app:app
+CMD exec gunicorn --bind :3456 --workers 1 --threads 8 app:app
